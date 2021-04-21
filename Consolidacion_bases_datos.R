@@ -1,4 +1,5 @@
 library(tidyverse)
+library(eeptools)
 #Cargar datos
 Respuestas_finales <- 
         read.csv("~/R Projects/diagnostico_social_ds/Datos/DATA-Table 1.csv")
@@ -133,5 +134,34 @@ Respuestas_finales$N_RESPUESTA_BASA <- as.factor(Respuestas_finales$N_RESPUESTA_
 class(Respuestas_finales$N_RESPUESTA_BASA)
 rm(N_RESPUESTA_BASA)
 
-
-
+#Variable: fecha de nacimiento (edad)
+Fechas_nacimiento <- 
+        read.csv("~/R Projects/diagnostico_social_ds/Datos/Fechas_nacimiento.csv", header=FALSE)
+#Limpieza de cuadro
+Fechas_nacimiento <- Fechas_nacimiento[-1,]
+Fechas_nacimiento$V3 <- NULL
+Fechas_nacimiento$V4 <- NULL
+Fechas_nacimiento$V5 <- NULL
+Fechas_nacimiento$V6 <- NULL
+Fechas_nacimiento$V7 <- NULL
+#Renombrar variables y crear edad
+Fechas_nacimiento <- rename(Fechas_nacimiento,
+       CUI=V1)
+Fechas_nacimiento <- rename(Fechas_nacimiento,
+                            FechaNac=V2)
+Fechas_nacimiento$Edad2021 <- NA
+#Definir la variable para crear edad
+class(Fechas_nacimiento$FechaNac)
+Fechas_nacimiento$FechaNac <- as.Date(Fechas_nacimiento$FechaNac)
+#Crear edad en años
+Fechas_nacimiento <- subset.data.frame(Fechas_nacimiento,
+                  !is.na(Fechas_nacimiento$FechaNac))
+Fechas_nacimiento$Edad2021 <- age_calc(dob = Fechas_nacimiento$FechaNac,
+         enddate = Sys.Date(),
+         units = "years")
+Fechas_nacimiento$Edad2021 <- round(Fechas_nacimiento$Edad2021,
+      digits = 0)
+#Integrar a la base de datos general
+Respuestas_finales$EDAD_RESPONDENTE <- NA
+Respuestas_finales$EDAD_RESPONDENTE<- Fechas_nacimiento$Edad2021[match(Respuestas_finales$V_DPI_CUI_185,Fechas_nacimiento$CUI)]
+rm(Fechas_nacimiento)
