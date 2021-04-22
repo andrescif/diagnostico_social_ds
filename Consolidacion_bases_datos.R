@@ -165,3 +165,30 @@ Fechas_nacimiento$Edad2021 <- round(Fechas_nacimiento$Edad2021,
 Respuestas_finales$EDAD_RESPONDENTE <- NA
 Respuestas_finales$EDAD_RESPONDENTE<- Fechas_nacimiento$Edad2021[match(Respuestas_finales$V_DPI_CUI_185,Fechas_nacimiento$CUI)]
 rm(Fechas_nacimiento)
+
+#Variable: N_PUESTO
+N_PUESTO <- read.csv("~/R Projects/diagnostico_social_ds/Datos/N_PUESTO-Table 1.csv")
+Respuestas_finales$N_PUESTO <- N_PUESTO$DESCRIPCIÓN[match(Respuestas_finales$N_PUESTO,
+                                                          N_PUESTO$CODIGO)]
+table(Respuestas_finales$N_PUESTO)
+#Corregir los errores basicos
+grep("¿",Respuestas_finales$N_PUESTO)
+grep("MAESTRO DE COMPUTACI¿N",Respuestas_finales$N_PUESTO) 
+Respuestas_finales$N_PUESTO[grep("MAESTRO DE COMPUTACI¿N",Respuestas_finales$N_PUESTO)] <- 
+  "MAESTRO DE COMPUTACION"
+Respuestas_finales$N_PUESTO[grep("INSTRUCTORA DE CORTE Y CONFECCI¿N",Respuestas_finales$N_PUESTO)] <- 
+  "INSTRUCTORA DE CORTE Y CONFECCION"
+Respuestas_finales$N_PUESTO[grep("MANTENIMIENTO Y LIMPIEZA EN CENTROS DE CAPACITACI¿N",Respuestas_finales$N_PUESTO)] <- 
+  "MANTENIMIENTO Y LIMPIEZA EN CENTROS DE CAPACITACION"
+Respuestas_finales$N_PUESTO[grep("PROFESORA DE COMPUTACI¿N/BIBLIOTECAS",Respuestas_finales$N_PUESTO)] <- 
+  "PROFESORA DE COMPUTACION DE BIBLIOTECAS"
+Respuestas_finales$N_PUESTO[grep("MONITOR DE LECTURA Y ACTIVIDADES L¿DICAS",Respuestas_finales$N_PUESTO)] <- 
+  "MONITOR DE LECTURA Y ACTIVIDADES LUDICAS"
+rm(N_PUESTO)
+
+#Correccion de programa
+Respuestas_finales$N_PROGRAMA_SOCIAL <- as.character(Respuestas_finales$N_PROGRAMA_SOCIAL)
+Respuestas_finales$N_PROGRAMA_SOCIAL[is.na(Respuestas_finales$N_PROGRAMA_SOCIAL)] <- "EMEFUT"
+Respuestas_finales$N_PROGRAMA_SOCIAL <- as.factor(Respuestas_finales$N_PROGRAMA_SOCIAL)
+class(Respuestas_finales$N_PROGRAMA_SOCIAL)
+table(Respuestas_finales$N_PROGRAMA_SOCIAL)
