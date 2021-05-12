@@ -68,7 +68,7 @@ table(Adulto_mayor_respuestas$N_RESPUESTA_BASA)
 accion_principal_am <- Adulto_mayor_respuestas %>%
         select("V_ACCION_PRINCIPAL_1","V_ACCION_PRINCIPAL_2","V_ACCION_PRINCIPAL_3")%>%
         gather()
-        #Limpiar las resputas
+        #Limpiar las respuestas
 accion_principal_am$key <- NULL
 colnames(accion_principal_am)[1] <- "Respuestas"
                 #Minusculas
@@ -79,9 +79,45 @@ accion_principal_am$Respuestas <- str_replace_all(accion_principal_am$Respuestas
 accion_principal_am$Respuestas <- stri_trans_general(accion_principal_am$Respuestas,"Latin-ASCII")
                 #Remover espacios
 accion_principal_am$Respuestas <- trimws(accion_principal_am$Respuestas,which = "both")
+                #Estandarizacion basica
+accion_principal_am$Respuestas <- gsub("contribuir al bienestar emocional a traves de las charlas de crecimiento personal",
+     "charlas de crecimiento personal",accion_principal_am$Respuestas)
+accion_principal_am$Respuestas <- gsub("ritmica ritmica","ritmica",accion_principal_am$Respuestas)
+x <- as.data.frame(table(accion_principal_am$Respuestas))
+y <- as.data.frame(prop.table(table(accion_principal_am$Respuestas)))
+x$prop <- y$Freq
+write.csv(x,file = "Tabla de respuestas Adulto Mayor 3 principales acciones")
+rm(x)
+rm(y)
+rm(accion_principal_am)
+rm(programa_objetivo_am)
+rm(token_objetivoprograma_am)
+rm(token_objetivoprograma_am_dfm)
+#Explica relacion entre acciones principales y problemas del adulto mayor
+        #Tokenizar
+token_relacion_accion_objetivo_am <- tokens(Adulto_mayor_respuestas$V_EXPLICA_RELACION,
+                                            what = "word",remove_punct = TRUE,
+                                            remove_symbols = TRUE)
+        #Hacer minusculas
+token_relacion_accion_objetivo_am <- tokens_tolower(token_relacion_accion_objetivo_am)
+        #Remover los articulos
+token_relacion_accion_objetivo_am <- tokens_select(token_relacion_accion_objetivo_am,
+                                                   stopwords(language = "es"),selection ="remove")
+        #Crear dfm
+token_relacion_accion_objetivo_am_dfm <- dfm(token_relacion_accion_objetivo_am,tolower = FALSE)
+        #Crear base de datos
+relacion_accion_objetivo_am <- as.data.frame(token_relacion_accion_objetivo_am_dfm)
+        #Sumar uso de palabras
+relacion_accion_objetivo_am <- adorn_totals(relacion_accion_objetivo_am,where = "row")
+        #Wordcloud
+y <- relacion_accion_objetivo_am[9,-1]
+wordcloud(variable.names(y),y,min.freq = 2)
+rm(y)
+rm(token_relacion_accion_objetivo_am)
+rm(token_relacion_accion_objetivo_am_dfm)
+rm(relacion_accion_objetivo_am)
 
 
-table(accion_principal_am$Respuestas)
 
 
 
