@@ -6,6 +6,8 @@ library(wordcloud)
 library(janitor)
 library(stringi)
 #------------------ANANLISIS POR PROGRAMA SOIAL--------------------------------------------#
+#Una corrección
+Respuestas_finales$EDAD_RESPONDENTE[89] <- 59
 
 #-----------------------------------Adulto mayor-------------------------------------------
 Adulto_mayor_respuestas <- subset.data.frame(Respuestas_finales,
@@ -522,6 +524,7 @@ rm(y)
 rm(token_relacion_accion_objetivo_emefut)
 rm(token_relacion_accion_objetivo_emefut_dfm)
 rm(relacion_accion_objetivo_emefut)
+rm(programa_objetivo_emefut)
 #Calificación de la coordinadora
 summary(EMEFUT_respuestas$N_CALIFICACION_CORDI)
 #Tablas finales para análisis cualitativo
@@ -539,10 +542,422 @@ write.csv(x,
 rm(x)
 rm(EMEFUT_respuestas)
 
-#---------------------------------TECNICO PRODUCTIVO---------------------------------------
+#---------------------------------Tecnico Productivo---------------------------------------
+levels(Respuestas_finales$N_PROGRAMA_SOCIAL)
+TecProd_respuestas <- subset.data.frame(Respuestas_finales,
+                                       Respuestas_finales$N_PROGRAMA_SOCIAL=="Técnico Productivo")
+#Caracterizacion del personal
+Tabla_personal_TecProd <- select(TecProd_respuestas,
+                                c("N_PUESTO","EDAD_RESPONDENTE","N_ESTUDIO_MAXIMO","N_TIEMPO_PROGRAMA"))
+write.csv(Tabla_personal_TecProd,
+          file = "Personal Tecnico Productivo")
 
+summary(Tabla_personal_TecProd$EDAD_RESPONDENTE)
+#Graficos de relaciones entre variables
+Tabla_personal_TecProd %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,fill= N_TIEMPO_PROGRAMA))+
+        theme_bw()+
+        geom_bar()+
+        guides(fill=guide_legend(title="Tiempo en el Programa"))+
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1))+
+        xlab("Máximo nivel educativo")+
+        ylab("Cantidad de instructoras")+
+        ggtitle("Nivel Educativo y Tiempo en el Programa Técnico Productivo")+
+        scale_y_continuous(breaks=c(0,2,4,6,8,10))
 
+Tabla_personal_TecProd %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))
 
+Tabla_personal_TecProd %>%
+        ggplot(aes(N_TIEMPO_PROGRAMA,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        xlab("Tiempo del profesor en EMEFUT")+
+        ylab("Edad del profesor")+
+        ggtitle("Distribución de Edad de Profesores EMEFUT por Nivel Educativo")
 
+Tabla_personal_TecProd %>%
+        ggplot(aes(N_PUESTO ,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+
+TecProd_respuestas %>%
+        ggplot(aes(N_PROGRAMA_SOCIAL,EDAD_RESPONDENTE,color=N_PUESTO))+
+        theme_bw()+
+        geom_jitter(stroke=3)+
+        guides(color=guide_legend(title="Puesto"))
+rm(Tabla_personal_TecProd)
+
+#Enfoque del programa
+#Edad
+table(TecProd_respuestas$N_EDAD_DIRIGIDO_DISENIO)
+table(TecProd_respuestas$N_EDAD_ATIENDE)
+prop.table(table(TecProd_respuestas$N_EDAD_DIRIGIDO_DISENIO))
+prop.table(table(TecProd_respuestas$N_EDAD_ATIENDE))
+#Hacerlo tablas
+x <- as.data.frame(table(TecProd_respuestas$N_EDAD_DIRIGIDO_DISENIO))
+colnames(x) <- c("Respuesta","Diseno")
+x1 <- as.data.frame(prop.table(table(TecProd_respuestas$N_EDAD_DIRIGIDO_DISENIO)))
+y <- as.data.frame(table(TecProd_respuestas$N_EDAD_ATIENDE))
+y2 <- as.data.frame(prop.table(table(TecProd_respuestas$N_EDAD_ATIENDE)))
+x$Prop.diseno <- x1$Freq
+x$Atencion <- y$Freq
+x$Pop.atencion <- y2$Freq
+write.csv(x,
+          file = "Tabla de respuestas enfoque de edad Tecnico Productiva")
+rm(x)   
+rm(x1)
+rm(y)
+rm(y2)
+#Género
+table(TecProd_respuestas$N_GENERO_DIRIGIDO_DISENIO)
+prop.table(table(TecProd_respuestas$N_GENERO_DIRIGIDO_DISENIO))
+table(TecProd_respuestas$N_GENERO_ATIENDE)
+prop.table(table(TecProd_respuestas$N_GENERO_ATIENDE))
+#Hacerlo tablas
+x <- as.data.frame(table(TecProd_respuestas$N_GENERO_DIRIGIDO_DISENIO))
+x1 <- as.data.frame(prop.table(table(TecProd_respuestas$N_GENERO_DIRIGIDO_DISENIO)))
+y <- as.data.frame(table(TecProd_respuestas$N_GENERO_ATIENDE))
+y1 <- as.data.frame(prop.table(table(TecProd_respuestas$N_GENERO_ATIENDE)))
+colnames(x) <- c("Respuesta","Diseno")
+x$Prop.diseno <- x1$Freq
+x$Atencion <- y$Freq
+x$Prop.atencion <- y1$Freq
+write.csv(x,
+          file = "Tabla de respuestas enfoque de genero Tecnico Productiva")
+rm(x)
+rm(x1)
+rm(y)
+rm(y1)
+#Problema social principal
+Problemas_soc_TecProd <- TecProd_respuestas %>%
+        select("N_PROBLEMA_SOC_1","N_PROBLEMA_SOC_2","N_PROBLEMA_SOC_3")%>%
+        gather()
+x<- as.data.frame(table(Problemas_soc_TecProd$value))
+y <- as.data.frame(prop.table(table(Problemas_soc_TecProd$value)))
+x$Prop <- y$Freq
+write.csv(x,
+          file = "Tabla de problemas sociales usuarios de Tecnico Productivas")
+x %>%
+        ggplot(aes(Var1,Freq))+
+        theme_bw()+
+        geom_col()+
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1))
+rm(x)
+rm(y)
+rm(Problemas_soc_TecProd)
+rm(Tabla_personal_TecProd)
+
+#Principal objetivo del programa (ANALISIS DE TEXTO)
+#Tokenizar
+token_objetivoprograma_tecprod <- tokens(TecProd_respuestas$V_PRINCIPAL_OBJ_PROGRAMA,
+                                        what = "word",remove_punct = TRUE,
+                                        remove_symbols = TRUE)
+#Hacer minusculas todo el texto
+token_objetivoprograma_tecprod <- tokens_tolower(token_objetivoprograma_tecprod)
+#Remover los articulos
+token_objetivoprograma_tecprod <- tokens_select(token_objetivoprograma_tecprod,
+                                               stopwords(language = "es"),selection ="remove")
+#Paso recomendado pero NO usado, STEM, dejar en la base las palabras
+tokens_wordstem(token_objetivoprograma_tecprod, language = "es")
+#Crear objeto que contenga frecuencias de palabras
+token_objetivoprograma_tecprod_dfm <- dfm(token_objetivoprograma_tecprod, tolower = FALSE)
+dim(token_objetivoprograma_tecprod_dfm)
+#Nube de palabras del objetivo del programa
+programa_objetivo_tecprod <- convert(token_objetivoprograma_tecprod_dfm,to="data.frame")
+#Sumar las columnas
+programa_objetivo_tecprod <- adorn_totals(programa_objetivo_tecprod,where = "row")
+y <- programa_objetivo_tecprod[15,-1]
+#Nube de palabras
+wordcloud(variable.names(y),y,min.freq = 2,fixed.asp = TRUE)
+rm(y)
+#¿Cómo sabe el objetivo principal?
+x <- as.data.frame(table(TecProd_respuestas$N_RESPUESTA_BASA))
+y <- as.data.frame(prop.table(table(TecProd_respuestas$N_RESPUESTA_BASA)))
+x$Prop.freq <- y$Freq
+write.csv(x,
+          file = "Tabla de conocimiento del objetivo principal del programa Tecnico Productivas")
+rm(token_objetivoprograma_tecprod)
+rm(token_objetivoprograma_tecprod_dfm)
+rm(programa_objetivo_tecprod)
+rm(x)
+rm(y)
+#Acciones principales
+#Juntar todas las respuestas
+accion_principal_tecprod <- TecProd_respuestas %>%
+        select("V_ACCION_PRINCIPAL_1","V_ACCION_PRINCIPAL_2","V_ACCION_PRINCIPAL_3")%>%
+        gather()
+#Limpiar las respuestas
+accion_principal_tecprod$key <- NULL
+colnames(accion_principal_tecprod)[1] <- "Respuestas"
+#Minusculas
+accion_principal_tecprod$Respuestas <- tolower(accion_principal_tecprod$Respuestas)
+#Remover puntuacion
+accion_principal_tecprod$Respuestas <- str_replace_all(accion_principal_tecprod$Respuestas,"[[:punct:]]","")
+#Remover acentos
+accion_principal_tecprod$Respuestas <- stri_trans_general(accion_principal_tecprod$Respuestas,"Latin-ASCII")
+#Remover espacios
+accion_principal_tecprod$Respuestas <- trimws(accion_principal_tecprod$Respuestas,which = "both")
+#Hacer una tabla
+write.csv(accion_principal_tecprod,file = "Tabla de respuestas Tecnico Productivas 3 principales acciones")
+rm(accion_principal_tecprod)
+
+#Explica relacion entre acciones principales y problemas del adulto mayor
+#Tokenizar
+token_relacion_accion_objetivo_tecprod <- tokens(TecProd_respuestas$V_EXPLICA_RELACION,
+                                                what = "word",remove_punct = TRUE,
+                                                remove_symbols = TRUE)
+#Hacer minusculas
+token_relacion_accion_objetivo_tecprod <- tokens_tolower(token_relacion_accion_objetivo_tecprod)
+#Remover los articulos
+token_relacion_accion_objetivo_tecprod <- tokens_select(token_relacion_accion_objetivo_tecprod,
+                                                       stopwords(language = "es"),selection ="remove")
+#Crear dfm
+token_relacion_accion_objetivo_tecprod_dfm <- dfm(token_relacion_accion_objetivo_tecprod,tolower = FALSE)
+#Crear base de datos
+token_relacion_accion_objetivo_tecprod <- convert(token_relacion_accion_objetivo_tecprod_dfm,
+                                                  to="data.frame")
+#Sumar uso de palabras
+token_relacion_accion_objetivo_tecprod <- adorn_totals(token_relacion_accion_objetivo_tecprod,where = "row")
+#Wordcloud
+y <- token_relacion_accion_objetivo_tecprod[15,-1]
+wordcloud(variable.names(y),y,min.freq = 3)
+rm(y)
+rm(token_relacion_accion_objetivo_tecprod)
+rm(token_relacion_accion_objetivo_tecprod_dfm)
+
+#Calificación de la coordinadora
+summary(TecProd_respuestas$N_CALIFICACION_CORDI)
+#Tablas finales para análisis cualitativo
+x<- table(TecProd_respuestas$V_PRINCIPAL_OBJ_PROGRAMA)
+write.csv(x,
+          file = "Tabla de respuesta a objetivo final Tecnico Productivo")
+rm(x)
+x <- table(TecProd_respuestas$V_EXPLICA_RELACION)
+write.csv(x,
+          file = "Tabla de respuestas de relacion objetivo accion Tecnico Productivo")
+rm(x)
+x <- table(TecProd_respuestas$V_CAMBIOS_PROGRAMA)
+write.csv(x,
+          file = "Tabla de respuestas de cambios sugeridos a Tecnico Productivo")
+rm(x)
+rm(TecProd_respuestas)
+
+#-----------------------------------Munieduca Movil-----------------------------------------
+
+levels(Respuestas_finales$N_PROGRAMA_SOCIAL)
+Munieduca_respuestas <- subset.data.frame(Respuestas_finales,
+                                        Respuestas_finales$N_PROGRAMA_SOCIAL=="Munieduca Móvil")
+#Caracterizacion del personal
+Tabla_personal_Munieduca <- select(Munieduca_respuestas,
+                                 c("N_PUESTO","EDAD_RESPONDENTE","N_ESTUDIO_MAXIMO","N_TIEMPO_PROGRAMA"))
+write.csv(Tabla_personal_Munieduca,
+          file = "Personal Munieduca")
+
+summary(Tabla_personal_Munieduca$EDAD_RESPONDENTE)
+#Graficos de relaciones entre variables
+Tabla_personal_Munieduca %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,fill= N_TIEMPO_PROGRAMA))+
+        theme_bw()+
+        geom_bar()+
+        guides(fill=guide_legend(title="Tiempo en el Programa"))+
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1))+
+        xlab("Máximo nivel educativo")+
+        ylab("Cantidad de instructoras")+
+        ggtitle("Nivel Educativo y Tiempo en el Programa Munieduca Móvil")+
+        scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16))
+
+Tabla_personal_Munieduca %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))
+
+Tabla_personal_Munieduca %>%
+        ggplot(aes(N_TIEMPO_PROGRAMA,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        xlab("Tiempo del profesor en EMEFUT")+
+        ylab("Edad del profesor")+
+        ggtitle("Distribución de Edad de Personal Munieduca por Nivel Educativo")
+
+Tabla_personal_Munieduca %>%
+        ggplot(aes(N_PUESTO ,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+
+Munieduca_respuestas %>%
+        ggplot(aes(N_PROGRAMA_SOCIAL,EDAD_RESPONDENTE,color=N_PUESTO))+
+        theme_bw()+
+        geom_jitter(stroke=3)+
+        guides(color=guide_legend(title="Puesto"))
+rm(Tabla_personal_Munieduca)
+
+#Enfoque del programa
+#Edad
+table(Munieduca_respuestas$N_EDAD_DIRIGIDO_DISENIO)
+table(Munieduca_respuestas$N_EDAD_ATIENDE)
+prop.table(table(Munieduca_respuestas$N_EDAD_DIRIGIDO_DISENIO))
+prop.table(table(Munieduca_respuestas$N_EDAD_ATIENDE))
+#Hacerlo tablas
+x <- as.data.frame(table(Munieduca_respuestas$N_EDAD_DIRIGIDO_DISENIO))
+colnames(x) <- c("Respuesta","Diseno")
+x1 <- as.data.frame(prop.table(table(Munieduca_respuestas$N_EDAD_DIRIGIDO_DISENIO)))
+y <- as.data.frame(table(Munieduca_respuestas$N_EDAD_ATIENDE))
+y2 <- as.data.frame(prop.table(table(Munieduca_respuestas$N_EDAD_ATIENDE)))
+x$Prop.diseno <- x1$Freq
+x$Atencion <- y$Freq
+x$Pop.atencion <- y2$Freq
+write.csv(x,
+          file = "Tabla de respuestas enfoque de edad Munieduca")
+rm(x)   
+rm(x1)
+rm(y)
+rm(y2)
+#Género
+table(Munieduca_respuestas$N_GENERO_DIRIGIDO_DISENIO)
+prop.table(table(Munieduca_respuestas$N_GENERO_DIRIGIDO_DISENIO))
+table(Munieduca_respuestas$N_GENERO_ATIENDE)
+prop.table(table(Munieduca_respuestas$N_GENERO_ATIENDE))
+#Hacerlo tablas
+x <- as.data.frame(table(Munieduca_respuestas$N_GENERO_DIRIGIDO_DISENIO))
+x1 <- as.data.frame(prop.table(table(Munieduca_respuestas$N_GENERO_DIRIGIDO_DISENIO)))
+y <- as.data.frame(table(Munieduca_respuestas$N_GENERO_ATIENDE))
+y1 <- as.data.frame(prop.table(table(Munieduca_respuestas$N_GENERO_ATIENDE)))
+colnames(x) <- c("Respuesta","Diseno")
+x$Prop.diseno <- x1$Freq
+x$Atencion <- y$Freq
+x$Prop.atencion <- y1$Freq
+write.csv(x,
+          file = "Tabla de respuestas enfoque de genero Munieduca")
+rm(x)
+rm(x1)
+rm(y)
+rm(y1)
+#Problema social principal
+Problemas_soc_Munieduca <- Munieduca_respuestas %>%
+        select("N_PROBLEMA_SOC_1","N_PROBLEMA_SOC_2","N_PROBLEMA_SOC_3")%>%
+        gather()
+x<- as.data.frame(table(Problemas_soc_Munieduca$value))
+y <- as.data.frame(prop.table(table(Problemas_soc_Munieduca$value)))
+x$Prop <- y$Freq
+write.csv(x,
+          file = "Tabla de problemas sociales usuarios de Munieduca")
+x %>%
+        ggplot(aes(Var1,Freq))+
+        theme_bw()+
+        geom_col()+
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1))
+rm(x)
+rm(y)
+rm(Problemas_soc_Munieduca)
+rm(Tabla_personal_Munieduca)
+
+#Principal objetivo del programa (ANALISIS DE TEXTO)
+#Tokenizar
+token_objetivoprograma_munieduca <- tokens(Munieduca_respuestas$V_PRINCIPAL_OBJ_PROGRAMA,
+                                         what = "word",remove_punct = TRUE,
+                                         remove_symbols = TRUE)
+#Hacer minusculas todo el texto
+token_objetivoprograma_munieduca <- tokens_tolower(token_objetivoprograma_munieduca)
+#Remover los articulos
+token_objetivoprograma_munieduca <- tokens_select(token_objetivoprograma_munieduca,
+                                                stopwords(language = "es"),selection ="remove")
+#Paso recomendado pero NO usado, STEM, dejar en la base las palabras
+tokens_wordstem(token_objetivoprograma_munieduca, language = "es")
+#Crear objeto que contenga frecuencias de palabras
+token_objetivoprograma_munieduca_dfm <- dfm(token_objetivoprograma_munieduca, tolower = FALSE)
+dim(token_objetivoprograma_munieduca_dfm)
+#Nube de palabras del objetivo del programa
+programa_objetivo_munieduca <- convert(token_objetivoprograma_munieduca_dfm,to="data.frame")
+#Sumar las columnas
+programa_objetivo_munieduca <- adorn_totals(programa_objetivo_munieduca,where = "row")
+y <- programa_objetivo_munieduca[27,-1]
+#Nube de palabras
+wordcloud(variable.names(y),y,min.freq = 2,fixed.asp = TRUE)
+rm(y)
+#¿Cómo sabe el objetivo principal?
+x <- as.data.frame(table(Munieduca_respuestas$N_RESPUESTA_BASA))
+y <- as.data.frame(prop.table(table(Munieduca_respuestas$N_RESPUESTA_BASA)))
+x$Prop.freq <- y$Freq
+write.csv(x,
+          file = "Tabla de conocimiento del objetivo principal del programa Munieduca Móvil")
+rm(token_objetivoprograma_munieduca)
+rm(token_objetivoprograma_munieduca_dfm)
+rm(programa_objetivo_munieduca)
+rm(x)
+rm(y)
+#Acciones principales
+#Juntar todas las respuestas
+accion_principal_munieduca <- Munieduca_respuestas %>%
+        select("V_ACCION_PRINCIPAL_1","V_ACCION_PRINCIPAL_2","V_ACCION_PRINCIPAL_3")%>%
+        gather()
+#Limpiar las respuestas
+accion_principal_munieduca$key <- NULL
+colnames(accion_principal_munieduca)[1] <- "Respuestas"
+#Minusculas
+accion_principal_munieduca$Respuestas <- tolower(accion_principal_munieduca$Respuestas)
+#Remover puntuacion
+accion_principal_munieduca$Respuestas <- str_replace_all(accion_principal_munieduca$Respuestas,"[[:punct:]]","")
+#Remover acentos
+accion_principal_munieduca$Respuestas <- stri_trans_general(accion_principal_munieduca$Respuestas,"Latin-ASCII")
+#Remover espacios
+accion_principal_munieduca$Respuestas <- trimws(accion_principal_munieduca$Respuestas,which = "both")
+table(accion_principal_munieduca)
+#Hacer una tabla
+write.csv(accion_principal_munieduca,file = "Tabla de respuestas Munieduca 3 principales acciones")
+rm(accion_principal_munieduca)
+
+#Explica relacion entre acciones principales y problemas del adulto mayor
+#Tokenizar
+token_relacion_accion_objetivo_munieduca <- tokens(Munieduca_respuestas$V_EXPLICA_RELACION,
+                                                 what = "word",remove_punct = TRUE,
+                                                 remove_symbols = TRUE)
+#Hacer minusculas
+token_relacion_accion_objetivo_munieduca <- tokens_tolower(token_relacion_accion_objetivo_munieduca)
+#Remover los articulos
+token_relacion_accion_objetivo_munieduca <- tokens_select(token_relacion_accion_objetivo_munieduca,
+                                                        stopwords(language = "es"),selection ="remove")
+#Crear dfm
+token_relacion_accion_objetivo_munieduca_dfm <- dfm(token_relacion_accion_objetivo_munieduca,tolower = FALSE)
+#Crear base de datos
+token_relacion_accion_objetivo_munieduca <- convert(token_relacion_accion_objetivo_munieduca_dfm,
+                                                  to="data.frame")
+#Sumar uso de palabras
+token_relacion_accion_objetivo_munieduca <- adorn_totals(token_relacion_accion_objetivo_munieduca,where = "row")
+#Wordcloud
+y <- token_relacion_accion_objetivo_munieduca[27,-1]
+wordcloud(variable.names(y),y,min.freq = 2)
+rm(y)
+rm(token_relacion_accion_objetivo_munieduca)
+rm(token_relacion_accion_objetivo_munieduca_dfm)
+
+#Calificación de la coordinadora
+summary(Munieduca_respuestas$N_CALIFICACION_CORDI)
+#Tablas finales para análisis cualitativo
+x<- table(Munieduca_respuestas$V_PRINCIPAL_OBJ_PROGRAMA)
+write.csv(x,
+          file = "Tabla de respuesta a objetivo final Munieduca")
+rm(x)
+x <- table(Munieduca_respuestas$V_EXPLICA_RELACION)
+write.csv(x,
+          file = "Tabla de respuestas de relacion objetivo accion Munieduca")
+rm(x)
+x <- table(Munieduca_respuestas$V_CAMBIOS_PROGRAMA)
+write.csv(x,
+          file = "Tabla de respuestas de cambios sugeridos a Munieduca")
+rm(x)
+rm(Munieduca_respuestas)
+
+#----------------------------------Senderos del Arte---------------------------------------
 
 
