@@ -188,7 +188,7 @@ rm(N_PUESTO)
 
 #Correccion de programa
 Respuestas_finales$N_PROGRAMA_SOCIAL <- as.character(Respuestas_finales$N_PROGRAMA_SOCIAL)
-Respuestas_finales$N_PROGRAMA_SOCIAL[is.na(Respuestas_finales$N_PROGRAMA_SOCIAL)] <- "EMEFUT"
+Respuestas_finales$N_PROGRAMA_SOCIAL[grep("EMEFUT",Respuestas_finales$N_PUESTO)] <- "EMEFUT"
 Respuestas_finales$N_PROGRAMA_SOCIAL <- as.factor(Respuestas_finales$N_PROGRAMA_SOCIAL)
 class(Respuestas_finales$N_PROGRAMA_SOCIAL)
 table(Respuestas_finales$N_PROGRAMA_SOCIAL)

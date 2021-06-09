@@ -959,5 +959,251 @@ rm(x)
 rm(Munieduca_respuestas)
 
 #----------------------------------Senderos del Arte---------------------------------------
+levels(Respuestas_finales$N_PROGRAMA_SOCIAL)
+Senderos_respuestas <- subset.data.frame(Respuestas_finales,
+                                          Respuestas_finales$N_PROGRAMA_SOCIAL=="Senderos del Arte")
+#Caracterizacion del personal
+Tabla_personal_Senderos <- select(Senderos_respuestas,
+                                   c("N_PUESTO","EDAD_RESPONDENTE","N_ESTUDIO_MAXIMO","N_TIEMPO_PROGRAMA"))
+write.csv(Tabla_personal_Senderos,
+          file = "Personal Senderos del arte")
 
+summary(Tabla_personal_Senderos$EDAD_RESPONDENTE)
+#Graficos de relaciones entre variables
+Tabla_personal_Senderos %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,fill= N_TIEMPO_PROGRAMA))+
+        theme_bw()+
+        geom_bar()+
+        guides(fill=guide_legend(title="Tiempo en el Programa"))+
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1))+
+        xlab("Máximo nivel educativo")+
+        ylab("Cantidad de instructoras")+
+        ggtitle("Nivel Educativo y Tiempo en el Programa Munieduca Móvil")+
+        scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16))
 
+Tabla_personal_Senderos %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))
+
+Tabla_personal_Senderos %>%
+        ggplot(aes(N_TIEMPO_PROGRAMA,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        xlab("Tiempo del profesor en EMEFUT")+
+        ylab("Edad del profesor")+
+        ggtitle("Distribución de Edad de Personal Munieduca por Nivel Educativo")
+
+Tabla_personal_Senderos %>%
+        ggplot(aes(N_PUESTO ,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+
+Senderos_respuestas %>%
+        ggplot(aes(N_PROGRAMA_SOCIAL,EDAD_RESPONDENTE,color=N_PUESTO))+
+        theme_bw()+
+        geom_jitter(stroke=3)+
+        guides(color=guide_legend(title="Puesto"))
+rm(Tabla_personal_Senderos)
+
+#Enfoque del programa
+#Edad
+table(Senderos_respuestas$N_EDAD_DIRIGIDO_DISENIO)
+table(Senderos_respuestas$N_EDAD_ATIENDE)
+prop.table(table(Senderos_respuestas$N_EDAD_DIRIGIDO_DISENIO))
+prop.table(table(Senderos_respuestas$N_EDAD_ATIENDE))
+#Hacerlo tablas
+x <- as.data.frame(table(Senderos_respuestas$N_EDAD_DIRIGIDO_DISENIO))
+colnames(x) <- c("Respuesta","Diseno")
+x1 <- as.data.frame(prop.table(table(Senderos_respuestas$N_EDAD_DIRIGIDO_DISENIO)))
+y <- as.data.frame(table(Senderos_respuestas$N_EDAD_ATIENDE))
+y2 <- as.data.frame(prop.table(table(Senderos_respuestas$N_EDAD_ATIENDE)))
+x$Prop.diseno <- x1$Freq
+x$Atencion <- y$Freq
+x$Pop.atencion <- y2$Freq
+write.csv(x,
+          file = "Tabla de respuestas enfoque de edad Senderos del Arte")
+rm(x)   
+rm(x1)
+rm(y)
+rm(y2)
+#Género
+table(Senderos_respuestas$N_GENERO_DIRIGIDO_DISENIO)
+prop.table(table(Senderos_respuestas$N_GENERO_DIRIGIDO_DISENIO))
+table(Senderos_respuestas$N_GENERO_ATIENDE)
+prop.table(table(Senderos_respuestas$N_GENERO_ATIENDE))
+#Hacerlo tablas
+x <- as.data.frame(table(Senderos_respuestas$N_GENERO_DIRIGIDO_DISENIO))
+x1 <- as.data.frame(prop.table(table(Senderos_respuestas$N_GENERO_DIRIGIDO_DISENIO)))
+y <- as.data.frame(table(Senderos_respuestas$N_GENERO_ATIENDE))
+y1 <- as.data.frame(prop.table(table(Senderos_respuestas$N_GENERO_ATIENDE)))
+colnames(x) <- c("Respuesta","Diseno")
+x$Prop.diseno <- x1$Freq
+x$Atencion <- y$Freq
+x$Prop.atencion <- y1$Freq
+write.csv(x,
+          file = "Tabla de respuestas enfoque de genero Senderos del Arte")
+rm(x)
+rm(x1)
+rm(y)
+rm(y1)
+#Problema social principal
+Problemas_soc_Senderos <- Senderos_respuestas %>%
+        select("N_PROBLEMA_SOC_1","N_PROBLEMA_SOC_2","N_PROBLEMA_SOC_3")%>%
+        gather()
+x<- as.data.frame(table(Problemas_soc_Senderos$value))
+y <- as.data.frame(prop.table(table(Problemas_soc_Senderos$value)))
+x$Prop <- y$Freq
+write.csv(x,
+          file = "Tabla de problemas sociales usuarios de Senderos del Arte")
+x %>%
+        ggplot(aes(Var1,Freq))+
+        theme_bw()+
+        geom_col()+
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1))
+rm(x)
+rm(y)
+rm(Problemas_soc_Senderos)
+rm(Tabla_personal_Senderos)
+
+#Principal objetivo del programa (ANALISIS DE TEXTO)
+#Tokenizar
+token_objetivoprograma_senderos <- tokens(Senderos_respuestas$V_PRINCIPAL_OBJ_PROGRAMA,
+                                           what = "word",remove_punct = TRUE,
+                                           remove_symbols = TRUE)
+#Hacer minusculas todo el texto
+token_objetivoprograma_senderos <- tokens_tolower(token_objetivoprograma_senderos)
+#Remover los articulos
+token_objetivoprograma_senderos <- tokens_select(token_objetivoprograma_senderos,
+                                                  stopwords(language = "es"),selection ="remove")
+#Paso recomendado pero NO usado, STEM, dejar en la base las palabras
+tokens_wordstem(token_objetivoprograma_senderos, language = "es")
+#Crear objeto que contenga frecuencias de palabras
+token_objetivoprograma_senderos_dfm <- dfm(token_objetivoprograma_senderos, tolower = FALSE)
+dim(token_objetivoprograma_senderos_dfm)
+#Nube de palabras del objetivo del programa
+programa_objetivo_senderos <- convert(token_objetivoprograma_senderos_dfm,to="data.frame")
+#Sumar las columnas
+programa_objetivo_senderos <- adorn_totals(programa_objetivo_senderos,where = "row")
+y <- programa_objetivo_senderos[7,-1]
+#Nube de palabras
+wordcloud(variable.names(y),y,min.freq = 2,fixed.asp = TRUE)
+rm(y)
+#¿Cómo sabe el objetivo principal?
+x <- as.data.frame(table(Senderos_respuestas$N_RESPUESTA_BASA))
+y <- as.data.frame(prop.table(table(Senderos_respuestas$N_RESPUESTA_BASA)))
+x$Prop.freq <- y$Freq
+write.csv(x,
+          file = "Tabla de conocimiento del objetivo principal del programa Senderos del Arte")
+rm(token_objetivoprograma_senderos)
+rm(token_objetivoprograma_senderos_dfm)
+rm(programa_objetivo_senderos)
+rm(x)
+rm(y)
+#Acciones principales
+#Juntar todas las respuestas
+accion_principal_senderos <- Senderos_respuestas %>%
+        select("V_ACCION_PRINCIPAL_1","V_ACCION_PRINCIPAL_2","V_ACCION_PRINCIPAL_3")%>%
+        gather()
+#Limpiar las respuestas
+accion_principal_senderos$key <- NULL
+colnames(accion_principal_senderos)[1] <- "3 acciones principales del programa"
+#Minusculas
+accion_principal_senderos$`3 acciones principales del programa` <- tolower(accion_principal_senderos$`3 acciones principales del programa`)
+#Remover puntuacion
+accion_principal_senderos$`3 acciones principales del programa` <- str_replace_all(accion_principal_senderos$`3 acciones principales del programa`,"[[:punct:]]","")
+#Remover acentos
+accion_principal_senderos$`3 acciones principales del programa` <- stri_trans_general(accion_principal_senderos$`3 acciones principales del programa`,"Latin-ASCII")
+#Remover espacios
+accion_principal_senderos$`3 acciones principales del programa` <- trimws(accion_principal_senderos$`3 acciones principales del programa`,which = "both")
+table(accion_principal_senderos)
+#Hacer una tabla
+write.csv(accion_principal_senderos,file = "Tabla de respuestas Senderos del Arte 3 principales acciones")
+rm(accion_principal_senderos)
+
+#Explica relacion entre acciones principales y problemas del adulto mayor
+#Tokenizar
+token_relacion_accion_objetivo_senderos <- tokens(Senderos_respuestas$V_EXPLICA_RELACION,
+                                                   what = "word",remove_punct = TRUE,
+                                                   remove_symbols = TRUE)
+#Hacer minusculas
+token_relacion_accion_objetivo_senderos <- tokens_tolower(token_relacion_accion_objetivo_senderos)
+#Remover los articulos
+token_relacion_accion_objetivo_senderos <- tokens_select(token_relacion_accion_objetivo_senderos,
+                                                          stopwords(language = "es"),selection ="remove")
+#Crear dfm
+token_relacion_accion_objetivo_senderos_dfm <- dfm(token_relacion_accion_objetivo_senderos,tolower = FALSE)
+#Crear base de datos
+token_relacion_accion_objetivo_senderos <- convert(token_relacion_accion_objetivo_senderos_dfm,
+                                                    to="data.frame")
+#Sumar uso de palabras
+token_relacion_accion_objetivo_senderos <- adorn_totals(token_relacion_accion_objetivo_senderos,where = "row")
+#Wordcloud
+y <- token_relacion_accion_objetivo_senderos[7,-1]
+wordcloud(variable.names(y),y,min.freq = 2)
+rm(y)
+rm(token_relacion_accion_objetivo_senderos)
+rm(token_relacion_accion_objetivo_senderos_dfm)
+
+#Calificación de la coordinadora
+summary(Senderos_respuestas$N_CALIFICACION_CORDI)
+#Tablas finales para análisis cualitativo
+x<- table(Senderos_respuestas$V_PRINCIPAL_OBJ_PROGRAMA)
+write.csv(x,
+          file = "Tabla de respuesta a objetivo final Senderos del Arte")
+rm(x)
+x <- table(Senderos_respuestas$V_EXPLICA_RELACION)
+write.csv(x,
+          file = "Tabla de respuestas de relacion objetivo accion Senderos del Arte")
+rm(x)
+x <- table(Senderos_respuestas$V_CAMBIOS_PROGRAMA)
+write.csv(x,
+          file = "Tabla de respuestas de cambios sugeridos a Senderos del Arte")
+rm(x)
+rm(Senderos_respuestas)
+
+#-------------------------------------DS General------------------------------------------
+#Caracterizacion del personal
+Tabla_personal_DS <- select(Respuestas_finales,
+                                  c("N_PUESTO","EDAD_RESPONDENTE","N_ESTUDIO_MAXIMO","N_TIEMPO_PROGRAMA"))
+Tabla_personal_DS$EDAD_RESPONDENTE[Tabla_personal_DS$EDAD_RESPONDENTE==1] <- 67
+summary(Tabla_personal_DS$EDAD_RESPONDENTE)
+#Graficos de relaciones entre variables
+Tabla_personal_DS %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,fill= N_TIEMPO_PROGRAMA))+
+        theme_bw()+
+        geom_bar()+
+        guides(fill=guide_legend(title="Tiempo en el Programa"))+
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1))+
+        xlab("Máximo nivel educativo")+
+        ylab("Cantidad de miembros de programas sociales")+
+        ggtitle("Nivel Educativo y Tiempo en la Dirección de Desarrollo Social")+
+        scale_y_continuous(breaks=c(0,10,20,30,40,50,60,70,80))
+
+Tabla_personal_DS %>%
+        ggplot(aes(N_ESTUDIO_MAXIMO,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))
+
+Tabla_personal_DS %>%
+        ggplot(aes(N_TIEMPO_PROGRAMA,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        xlab("Tiempo de empleo")+
+        ylab("Edad")+
+        ggtitle("Distribución de Edad de Personal DS por Tiempo de Servicio")
+
+Tabla_personal_DS %>%
+        ggplot(aes(N_PUESTO ,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+
+rm(Tabla_personal_DS)
