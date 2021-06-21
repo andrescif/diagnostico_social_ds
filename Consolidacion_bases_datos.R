@@ -164,6 +164,7 @@ Fechas_nacimiento$Edad2021 <- round(Fechas_nacimiento$Edad2021,
 #Integrar a la base de datos general
 Respuestas_finales$EDAD_RESPONDENTE <- NA
 Respuestas_finales$EDAD_RESPONDENTE<- Fechas_nacimiento$Edad2021[match(Respuestas_finales$V_DPI_CUI_185,Fechas_nacimiento$CUI)]
+Respuestas_finales$EDAD_RESPONDENTE[Respuestas_finales$EDAD_RESPONDENTE==1] <- 59
 rm(Fechas_nacimiento)
 
 #Variable: N_PUESTO
@@ -189,6 +190,7 @@ rm(N_PUESTO)
 #Correccion de programa
 Respuestas_finales$N_PROGRAMA_SOCIAL <- as.character(Respuestas_finales$N_PROGRAMA_SOCIAL)
 Respuestas_finales$N_PROGRAMA_SOCIAL[grep("EMEFUT",Respuestas_finales$N_PUESTO)] <- "EMEFUT"
+Respuestas_finales$N_PROGRAMA_SOCIAL[Respuestas_finales$N_PROGRAMA_SOCIAL=="Comunidad Juvenil"] <- "EMEFUT"
 Respuestas_finales$N_PROGRAMA_SOCIAL <- as.factor(Respuestas_finales$N_PROGRAMA_SOCIAL)
 class(Respuestas_finales$N_PROGRAMA_SOCIAL)
 table(Respuestas_finales$N_PROGRAMA_SOCIAL)

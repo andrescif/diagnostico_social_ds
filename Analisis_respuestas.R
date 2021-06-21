@@ -63,7 +63,10 @@ y <- programa_objetivo_am[9,-1]
 wordcloud(variable.names(y),y,min.freq = 2)
 rm(x)
 #¿Cómo sabe el objetivo principal?
-table(Adulto_mayor_respuestas$N_RESPUESTA_BASA)
+x<- table(Adulto_mayor_respuestas$N_RESPUESTA_BASA)
+write.csv(x,
+          file = "En que basa respuesta adulto mayor")
+rm(x)
 #Acciones principales
         #Juntar todas las respuestas
 accion_principal_am <- Adulto_mayor_respuestas %>%
@@ -357,7 +360,7 @@ Tabla_personal_EMEFUT %>%
         xlab("Máximo nivel educativo")+
         ylab("Cantidad de profesores")+
         ggtitle("Nivel Educativo y Tiempo en el Programa EMEFUT")+
-        scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30))
+        scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32))
 
 Tabla_personal_EMEFUT %>%
         ggplot(aes(N_ESTUDIO_MAXIMO,EDAD_RESPONDENTE))+
@@ -372,7 +375,7 @@ Tabla_personal_EMEFUT %>%
         ylim(c(0,75))+
         xlab("Tiempo del profesor en EMEFUT")+
         ylab("Edad del profesor")+
-        ggtitle("Distribución de Edad de Profesores EMEFUT por Nivel Educativo")
+        ggtitle("Distribución de Edad de Profesores EMEFUT por Tiempo de Servicio")
 
 Tabla_personal_EMEFUT %>%
         ggplot(aes(N_PUESTO ,EDAD_RESPONDENTE))+
@@ -386,7 +389,7 @@ EMEFUT_respuestas %>%
         theme_bw()+
         geom_jitter(stroke=3)+
         guides(color=guide_legend(title="Puesto"))
-rm(Tabla_adulto_mayor_personal)
+rm(Tabla_personal_EMEFUT)
 
 #Enfoque del programa
 #Edad
@@ -449,8 +452,10 @@ rm(Problemas_soc_EMEFUT)
 rm(Tabla_personal_EMEFUT)
 
 #Principal objetivo del programa (ANALISIS DE TEXTO)
+#Remover acentos
+y <- stri_trans_general(EMEFUT_respuestas$V_PRINCIPAL_OBJ_PROGRAMA,"Latin-ASCII")
 #Tokenizar
-token_objetivoprograma_emefut <- tokens(EMEFUT_respuestas$V_PRINCIPAL_OBJ_PROGRAMA,
+token_objetivoprograma_emefut <- tokens(y,
                                     what = "word",remove_punct = TRUE,
                                     remove_symbols = TRUE)
 #Hacer minusculas todo el texto
@@ -467,7 +472,7 @@ dim(token_objetivoprograma_emefut_dfm)
 programa_objetivo_emefut <- convert(token_objetivoprograma_emefut_dfm,to="data.frame")
 #Sumar las columnas
 programa_objetivo_emefut <- adorn_totals(programa_objetivo_emefut,where = "row")
-y <- programa_objetivo_emefut[57,-1]
+y <- programa_objetivo_emefut[60,-1]
 #Nube de palabras
 wordcloud(variable.names(y),y,min.freq = 3,fixed.asp = TRUE)
 rm(y)
@@ -790,6 +795,13 @@ Tabla_personal_Munieduca %>%
 
 Tabla_personal_Munieduca %>%
         ggplot(aes(N_PUESTO ,EDAD_RESPONDENTE))+
+        theme_bw()+
+        geom_boxplot()+
+        ylim(c(0,75))+
+        theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+
+Tabla_personal_Munieduca %>%
+        ggplot(aes(N_TIEMPO_PROGRAMA ,EDAD_RESPONDENTE))+
         theme_bw()+
         geom_boxplot()+
         ylim(c(0,75))+
